@@ -1,0 +1,8 @@
+- name: configure k8s master
+  hosts: k8sMasters
+  become: yes
+  tasks:
+    - name: update & upgrade system
+      ansible.builtin.import_tasks: update.yaml
+    - name: install containerd
+      ansible.builtin.import_tasks: install-containerd.yaml

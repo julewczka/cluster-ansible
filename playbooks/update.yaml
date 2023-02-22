@@ -1,0 +1,8 @@
+# update ubuntu system with apt
+- name: update
+  ansible.builtin.apt:
+    update_cache: yes
+    
+- name: upgrade
+  ansible.builtin.apt:
+    upgrade: full

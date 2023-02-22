@@ -1,0 +1,8 @@
+- name: update k8s-workers
+  hosts: k8sWorkers
+  become: yes
+  tasks:
+    - name: update & upgrade system
+      ansible.builtin.import_tasks: update.yaml
+    - name: install containerd
+      ansible.builtin.import_tasks: install-containerd.yaml
