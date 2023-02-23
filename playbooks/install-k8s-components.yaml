@@ -1,0 +1,39 @@
+# install k8s components
+- name: install apt-transport-https
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: latest
+
+- name: install ca-certificates
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: latest
+
+- name: install curl
+  ansible.builtin.apt:
+    name: curl
+    state: latest
+
+- name: download google signing key
+  ansible.builtin.command: sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+- name: add Kubernetes apt repository
+  ansible.builtin.shell: echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+- name: update & upgrade
+  ansible.builtin.import_tasks: update.yaml
+
+- name: install kubelet
+  ansible.builtin.apt:
+    name: kubelet
+
+- name: install kubeadm
+  ansible.builtin.apt:
+    name: kubeadm
+
+- name: install kubectl
+  ansible.builtin.apt:
+    name: kubectl
+
+- name: pin kube tool version
+  ansible.builtin.command: sudo apt-mark hold kubelet kubeadm kubectl
