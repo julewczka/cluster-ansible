@@ -14,11 +14,25 @@
     name: curl
     state: latest
 
+- name: check if google gpg exists
+  stat:
+    path: "/etc/apt/keyrings/kubernetes-archive-keyring.gpg"
+  register: google
+
 - name: download google signing key
-  ansible.builtin.command: sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+  ansible.builtin.get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+    mode: 0644
+  when: not google.stat.exists
 
 - name: add Kubernetes apt repository
-  ansible.builtin.shell: echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    line: deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+    create: yes
+    mode: 0644
+  when: not google.stat.exists
 
 - name: update & upgrade
   ansible.builtin.import_tasks: update.yaml
@@ -35,5 +49,18 @@
   ansible.builtin.apt:
     name: kubectl
 
-- name: pin kube tool version
-  ansible.builtin.command: sudo apt-mark hold kubelet kubeadm kubectl
+- name: hold kubeadm
+  ansible.builtin.dpkg_selections:
+    name: kubeadm
+    selection: hold
+
+- name: hold kubelet
+  ansible.builtin.dpkg_selections:
+    name: kubelet
+    selection: hold
+
+- name: hold kubectl
+  ansible.builtin.dpkg_selections:
+    name: kubectl
+    selection: hold
+

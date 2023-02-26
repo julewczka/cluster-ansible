@@ -1,48 +1,115 @@
 # install & configure containerd 
+- name: disable swap 
+  ansible.builtin.shell: swapoff -a
+
+- name: disable swap in /etc/fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+
+- name: check if k8s.conf exists
+  stat:
+    path: /etc/modules-load.d/k8s.conf
+  register: modules_k8s_conf
+
 - name: create k8s.conf
-  ansible.builtin.shell: |
-    cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
-    overlay
-    br_netfilter
-    EOF
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/k8s.conf
+    line: |
+      overlay
+      br_netfilter
+    create: yes
+    mode: 0644
+  when: not modules_k8s_conf.stat.exists
 
-- name: sudo modprobe overlay
-  ansible.builtin.command: sudo modprobe overlay 
+- name: load overlay kernel module
+  community.general.modprobe:
+    name: overlay
+    state: present
 
-- name: sudo modprobe br_netfilter
-  ansible.builtin.command: sudo modprobe br_netfilter
+- name: load br_netfilter kernel module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: check if k8s.conf exists
+  stat:
+    path: /etc/sysctl.d/k8s.conf
+  register: sysctl_k8s_conf
 
 - name: sysctl params
-  ansible.builtin.shell: |
-    cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
-    net.bridge.bridge-nf-call-iptables  = 1
-    net.bridge.bridge-nf-call-ip6tables = 1
-    net.ipv4.ip_forward                 = 1
-    EOF
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: |
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward                 = 1
+    create: yes
+    mode: 0644
+  when: not sysctl_k8s_conf.stat.exists
 
 - name: apply sysctl params without reboot
-  ansible.builtin.command: sudo sysctl --system
+  ansible.builtin.command: sysctl --system
+
+- name: check if docker gpg exists
+  stat:
+    path: "/etc/apt/trusted.gpg.d/docker.gpg"
+  register: docker
+
+- name: fetch docker repository
+  ansible.builtin.shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+  when: not docker.stat.exists
+
+- name: add docker repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    state: present
+  when: not docker.stat.exists
+
+- name: update
+  ansible.builtin.apt:
+    update_cache: yes
 
 - name: install containerd package
   ansible.builtin.apt:
-    name: containerd
+    name: containerd.io
     state: latest
 
-- name: check if /etc/containerd exists
-  stat:
-    path: "/etc/containerd"
-  register: containerd_folder
+- name: create /etc/containerd folder if not exists
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
 
-- name: create /etc/containerd folder
-  ansible.builtin.command: sudo mkdir /etc/containerd
-  when: not containerd_folder.stat.exists
+- name: create /etc/containerd/config.toml if not exists
+  stat: 
+    path: /etc/containerd/config.toml
+  register: containerd_conf
 
-- name: create containerd config file
-  ansible.builtin.shell: containerd config default | sudo tee /etc/containerd/config.toml
+- name: print containerd config
+  ansible.builtin.shell: containerd config default
+  register: containerd_conf_output
+  when: not containerd_conf.stat.exists
+
+- name: save containerd config to config.toml
+  ansible.builtin.copy:
+    content: "{{ containerd_conf_output.stdout }}"
+    dest: /etc/containerd/config.toml
+  when: not containerd_conf.stat.exists
 
 - name: configure systemd cgroup driver
-  ansible.builtin.command: sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^(\s*)SystemdCgroup = false$'
+    line: '\g<1>SystemdCgroup = true'
+    backrefs: yes
 
 - name: load new configuration
-  ansible.builtin.command: sudo systemctl restart containerd
+  ansible.builtin.systemd:
+    name: containerd 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    masked: no
 
