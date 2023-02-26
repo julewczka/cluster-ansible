@@ -1,0 +1,18 @@
+# read token
+- name: copy token
+  ansible.builtin.copy:
+    src: join_token
+    dest: ~/jt
+
+- name: read token
+  ansible.builtin.slurp:
+    src: ~/jt
+  register: join_token_file
+
+- name: join to cluster
+  ansible.builtin.command: "{{ join_token_file['content'] | b64decode }}"
+
+- name: remove token file
+  ansible.builtin.file:
+    path: ~/jt
+    state: absent

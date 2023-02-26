@@ -2,7 +2,9 @@
 - name: update
   ansible.builtin.apt:
     update_cache: yes
+  register: cache
     
 - name: upgrade
   ansible.builtin.apt:
     upgrade: full
+  when: cache.changed

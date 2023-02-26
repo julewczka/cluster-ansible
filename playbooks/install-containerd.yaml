@@ -48,9 +48,11 @@
     create: yes
     mode: 0644
   when: not sysctl_k8s_conf.stat.exists
+  register: sysctl_params
 
 - name: apply sysctl params without reboot
   ansible.builtin.command: sysctl --system
+  when: sysctl_params.changed
 
 - name: check if docker gpg exists
   stat:
@@ -104,6 +106,7 @@
     regexp: '^(\s*)SystemdCgroup = false$'
     line: '\g<1>SystemdCgroup = true'
     backrefs: yes
+  register: cd_conf
 
 - name: load new configuration
   ansible.builtin.systemd:
@@ -112,4 +115,4 @@
     daemon_reload: yes
     enabled: yes
     masked: no
-
+  when: cd_conf.changed
