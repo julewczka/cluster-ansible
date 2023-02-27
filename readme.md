@@ -35,3 +35,11 @@ You need to define following environment-variables:
 - K8S-WORKER-X: ip or fqdn of your k8s workers
 
 You need to define a worker node env variable for each worker node in the cluster.
+
+## Container runtime
+
+Containerd is installed as container runtime engine for this setup. You can choose another container runtime by replacing `roles/containerd` and its subfolders.
+
+## Network addon
+
+[Weave Net](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/) addon is being used as network plugin for K8s. You can choose another network policy provider by replacing the daemonset in `roles/master/files/`.
