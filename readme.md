@@ -10,6 +10,13 @@ In order to run above command succesfully, you need 3 virtual machines with foll
 
 - python3
 
+In Addition you need to install following packages on the host (ansible controller machine):
+
+- ansible 
+- kubernetes.core module for ansible
+
+Kubernetes.core module can be installed with `ansible-galaxy collection install kubernetes.core`.
+
 and following minimum requirements ([K8s hw recommendation](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)) for virtual hardware:
 
 - atleast 2 cpu cores on your host
