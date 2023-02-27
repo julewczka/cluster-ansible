@@ -1,0 +1,15 @@
+# install prerequites
+- name: install apt-transport-https
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: latest
+
+- name: install ca-certificates
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: latest
+
+- name: install curl
+  ansible.builtin.apt:
+    name: curl
+    state: latest

@@ -1,18 +1,26 @@
 # read token
 - name: copy token
   ansible.builtin.copy:
-    src: join_token
-    dest: ~/jt
+    src: files/token
+    dest: /tmp/token
+
+- name: check if token exists
+  stat:
+    path: /tmp/token
+  register: token
 
 - name: read token
   ansible.builtin.slurp:
-    src: ~/jt
+    src: /tmp/token
   register: join_token_file
+  when: token.stat.exists
+
 
 - name: join to cluster
   ansible.builtin.command: "{{ join_token_file['content'] | b64decode }}"
+  when: token.stat.exists
 
 - name: remove token file
   ansible.builtin.file:
-    path: ~/jt
+    path: /tmp/token
     state: absent

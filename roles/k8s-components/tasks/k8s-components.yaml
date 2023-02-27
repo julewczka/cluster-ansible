@@ -1,0 +1,27 @@
+# install and hold k8s components
+- name: install kubelet
+  ansible.builtin.apt:
+    name: kubelet
+
+- name: install kubeadm
+  ansible.builtin.apt:
+    name: kubeadm
+
+- name: install kubectl
+  ansible.builtin.apt:
+    name: kubectl
+
+- name: hold kubeadm
+  ansible.builtin.dpkg_selections:
+    name: kubeadm
+    selection: hold
+
+- name: hold kubelet
+  ansible.builtin.dpkg_selections:
+    name: kubelet
+    selection: hold
+
+- name: hold kubectl
+  ansible.builtin.dpkg_selections:
+    name: kubectl
+    selection: hold

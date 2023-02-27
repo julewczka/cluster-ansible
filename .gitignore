@@ -1,3 +1,4 @@
 inventory.yaml
 deploy-ssh-key.yaml
 join_token
+token

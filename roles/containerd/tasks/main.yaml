@@ -1,0 +1,16 @@
+# install & configure containerd 
+- name: disable swap 
+  ansible.builtin.import_tasks: swap.yaml
+
+- name: configure kernel settings
+  ansible.builtin.import_tasks: kernel-settings.yaml
+
+- name: add repositories
+  ansible.builtin.import_tasks: repositories.yaml
+
+- name: update
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: install containerd
+  ansible.builtin.import_tasks: containerd.yaml

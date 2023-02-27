@@ -1,0 +1,11 @@
+- name: configure K8s control plane
+  hosts: k8sMasters
+  become: yes
+  roles:
+    - master
+
+- name: configure k8s workers
+  hosts: k8sWorkers
+  become: yes
+  roles: 
+    - workers

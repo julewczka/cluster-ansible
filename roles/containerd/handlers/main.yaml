@@ -1,0 +1,11 @@
+# load new configuration
+- name: apply sysctl params
+  ansible.builtin.command: sysctl --system
+
+- name: restart systemd
+  ansible.builtin.systemd:
+    name: containerd 
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    masked: no

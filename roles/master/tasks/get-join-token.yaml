@@ -1,20 +1,20 @@
 # get join token
-- name: print join token
+- name: print token
   ansible.builtin.shell: kubeadm token create --print-join-command
-  register: join_token
+  register: token
 
 - name: write token to file
   ansible.builtin.copy:
-    content: "{{ join_token.stdout }}"
-    dest: ~/join_token
+    content: "{{ token.stdout }}"
+    dest: /tmp/token
 
 - name: copy token file to control host
   ansible.builtin.fetch:
-    src: ~/join_token
-    dest: join_token
+    src: /tmp/token
+    dest: '{{ token_path }}'
     flat: yes
     
 - name: delete join token on remote node
   ansible.builtin.file:
-    path: ~/join_token
+    path: /tmp/token
     state: absent

@@ -1,0 +1,36 @@
+# install and setup containerd
+- name: install containerd package
+  ansible.builtin.apt:
+    name: containerd.io
+    state: latest
+
+- name: create /etc/containerd folder if not exists
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+
+- name: create /etc/containerd/config.toml if not exists
+  stat: 
+    path: /etc/containerd/config.toml
+  register: containerd_conf
+
+- name: print containerd config
+  ansible.builtin.shell: containerd config default
+  register: containerd_conf_output
+  when: not containerd_conf.stat.exists
+
+- name: save containerd config to config.toml
+  ansible.builtin.copy:
+    content: "{{ containerd_conf_output.stdout }}"
+    dest: /etc/containerd/config.toml
+  when: not containerd_conf.stat.exists
+
+- name: configure systemd cgroup driver
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^(\s*)SystemdCgroup = false$'
+    line: '\g<1>SystemdCgroup = true'
+    backrefs: yes
+  notify:
+    - restart systemd

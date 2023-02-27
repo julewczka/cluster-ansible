@@ -1,0 +1,3 @@
+token_path: '{{inventory_dir}}/roles/workers/files/token'
+kubeconfig: '~/.kube/config'
+weave: '{{inventory_dir}}/cni/weave-daemonset-k8s.yaml'

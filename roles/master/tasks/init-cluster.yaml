@@ -11,30 +11,30 @@
 - name: copy admin.conf to $HOME/.kube
   ansible.builtin.copy:
     src: /etc/kubernetes/admin.conf
-    dest: ~/.kube/config
+    dest: '{{ kubeconfig }}'
     remote_src: yes
 
 - name: copy admin.conf to controller
   ansible.builtin.fetch:
     src: /etc/kubernetes/admin.conf
-    dest: ~/.kube/config
+    dest: '{{ kubeconfig }}'
     flat: yes
 
 - name: pip install kubernetes
   ansible.builtin.pip:
     name: kubernetes
 
-- name: copy weave daemonset to remote host
+- name: copy weave
   ansible.builtin.copy:
-    src: ../cni/weave-daemonset-k8s.yaml
-    dest: weave-daemonset-k8s.yaml
+    src: files/weave-daemonset-k8s.yaml
+    dest: /tmp/weave-daemonset-k8s.yaml
 
-- name: install weave network plugin
+- name: add weave
   kubernetes.core.k8s:
     state: present
-    src: weave-daemonset-k8s.yaml
+    src: /tmp/weave-daemonset-k8s.yaml
 
 - name: remove daemonset on remote host
   ansible.builtin.file:
-    path: weave-daemonset-k8s.yaml
+    path: /tmp/weave-daemonset-k8s.yaml
     state: absent

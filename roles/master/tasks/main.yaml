@@ -1,0 +1,12 @@
+# configure k8s master
+- name: check if cluster is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: admin_conf
+
+- name: init k8s cluster
+  ansible.builtin.import_tasks: init-cluster.yaml
+  when: not admin_conf.stat.exists
+
+- name: get join token
+  ansible.builtin.import_tasks: get-join-token.yaml

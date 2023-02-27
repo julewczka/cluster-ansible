@@ -1,0 +1,3 @@
+# join cluster
+- name: join cluster
+  ansible.builtin.import_tasks: join-cluster.yaml
