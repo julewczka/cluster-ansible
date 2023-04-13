@@ -1,0 +1,29 @@
+# add docker repositoriy
+- name: check if docker gpg exists
+  stat:
+    path: "/etc/apt/trusted.gpg.d/docker.gpg"
+  register: docker
+
+- name: fetch docker repository
+  ansible.builtin.shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg |  gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+  when: not docker.stat.exists
+
+- name: add docker repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu jammy stable
+    state: present
+  when: not docker.stat.exists
+
+# add k8s repository
+- name: download google signing key
+  ansible.builtin.get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+    mode: 0644
+
+- name: add Kubernetes apt repository
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    line: deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+    create: yes
+    mode: 0644

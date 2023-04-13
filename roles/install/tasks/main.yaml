@@ -1,0 +1,35 @@
+- name: update & upgrade
+  ansible.builtin.import_role:
+    name: common
+
+- name: install containerd package
+  ansible.builtin.apt:
+    name: containerd.io
+    state: latest
+
+- name: install apt-transport-https
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: latest
+
+- name: install ca-certificates
+  ansible.builtin.apt:
+    name: ca-certificates
+    state: latest
+
+- name: install curl
+  ansible.builtin.apt:
+    name: curl
+    state: latest
+
+- name: install kubectl
+  ansible.builtin.apt:
+    name: kubectl={{ version }}
+    
+- name: install kubelet
+  ansible.builtin.apt:
+    name: kubelet={{ version }}
+
+- name: install kubeadm
+  ansible.builtin.apt:
+    name: kubeadm={{ version }}

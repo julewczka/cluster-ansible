@@ -3,5 +3,6 @@
   become: yes
   roles:
     - common
-    - containerd
-    - k8s-components
+    - apt-repositories
+    - install
+    - configuration

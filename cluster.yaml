@@ -2,7 +2,7 @@
   hosts: k8sMasters
   become: yes
   roles:
-    - master
+    - control-plane
 
 - name: configure k8s workers
   hosts: k8sWorkers

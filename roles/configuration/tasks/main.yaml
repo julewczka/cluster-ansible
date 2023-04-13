@@ -1,0 +1,11 @@
+- name: disable swap
+  ansible.builtin.import_tasks: swap.yaml
+
+- name: set kernel settings
+  ansible.builtin.import_tasks: kernel-settings.yaml
+
+- name: configure containerd
+  ansible.builtin.import_tasks: containerd-config.yaml
+
+- name: hold packages
+  ansible.builtin.import_tasks: hold-packages.yaml
